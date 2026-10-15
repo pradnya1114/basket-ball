@@ -1,0 +1,19 @@
+{
+  "name": "AIR BASKETBALL",
+  "short_name": "Air Basketball",
+  "description": "Gesture-controlled arcade basketball. Grab. Aim. Shoot. Score! Works offline.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#04070f",
+  "theme_color": "#04070f",
+  "icons": [
+    {
+      "src": "/brand/air-basketball-logo.png",
+      "sizes": "1568x523",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
