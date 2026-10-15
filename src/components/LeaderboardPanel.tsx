@@ -48,13 +48,13 @@ export function LeaderboardPanel({ entries, currentNames, loading = false, dense
             <p className="mt-1 text-xs text-slate-500">Sink a few baskets to open the board.</p>
           </div>
         ) : (
-          <ol className={dense ? "grid h-full grid-cols-2 gap-1.5 md:flex md:flex-col md:justify-between" : "space-y-2"}>
+          <ol className={dense ? "grid grid-cols-2 gap-1.5 md:flex md:flex-col" : "space-y-2"}>
             {entries.map((e, i) => {
               const isMe = names.includes(e.name.trim().toLowerCase());
               return (
                 <li
                   key={`${e.name}-${i}`}
-                  className={`relative flex min-w-0 items-center gap-2 rounded-xl border px-2 ${dense ? "py-0.5 md:flex-1" : "py-2"} transition-colors ${
+                  className={`relative flex min-w-0 items-center gap-2 rounded-xl border px-2 ${dense ? "py-0.5" : "py-2"} transition-colors ${
                     isMe
                       ? "border-amber-300/70 bg-[linear-gradient(90deg,rgba(255,159,28,0.28),rgba(255,159,28,0.05))]"
                       : "border-white/10 bg-white/[0.04] hover:bg-white/[0.07]"

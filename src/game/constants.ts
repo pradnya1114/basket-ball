@@ -88,7 +88,7 @@ export const PINCH = {
 };
 
 export const TIMING = {
-  singlePlayerSec: 10,
+  singlePlayerSec: 60,
   shotLockoutMs: 750,
   respawnMs: 520,
 };
