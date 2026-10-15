@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { desc, sql } from "drizzle-orm";
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { gameResults } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 const READY_KEY = "__airBbSchemaReady";
 type GlobalWithFlag = typeof globalThis & { [READY_KEY]?: Promise<void> };
 
-function ensureSchema(): Promise<void> {
+function ensureSchema(db: ReturnType<typeof getDb>): Promise<void> {
   const g = globalThis as GlobalWithFlag;
   if (!g[READY_KEY]) {
     g[READY_KEY] = (async () => {
@@ -52,8 +52,8 @@ type Entry = {
 };
 
 /** Best (highest) score per player name, ties resolved by who reached it first. */
-async function readTop10(): Promise<Entry[]> {
-  await ensureSchema();
+async function readTop10(db: ReturnType<typeof getDb>): Promise<Entry[]> {
+  await ensureSchema(db);
   const rows = await db
     .select({
       playerName: gameResults.playerName,
@@ -82,7 +82,8 @@ async function readTop10(): Promise<Entry[]> {
 
 export async function GET() {
   try {
-    return NextResponse.json({ ok: true, source: "database", entries: await readTop10() });
+    const db = getDb();
+    return NextResponse.json({ ok: true, source: "database", entries: await readTop10(db) });
   } catch (error) {
     console.error("[leaderboard] read failed", error);
     return NextResponse.json({ ok: false, source: "fallback", entries: [] });
@@ -92,9 +93,10 @@ export async function GET() {
 /** Wipe the whole board (used by the "1 · RESET LEADERBOARD" control on the results page). */
 export async function DELETE() {
   try {
-    await ensureSchema();
+    const db = getDb();
+    await ensureSchema(db);
     await db.delete(gameResults);
-    return NextResponse.json({ ok: true, cleared: true, entries: await readTop10() });
+    return NextResponse.json({ ok: true, cleared: true, entries: await readTop10(db) });
   } catch (error) {
     console.error("[leaderboard] clear failed", error);
     return NextResponse.json({ ok: false, error: "database unavailable" }, { status: 503 });
@@ -127,7 +129,14 @@ export async function POST(request: Request) {
   const mode = body.mode === "two" ? "two" : "single";
   const durationSec = Math.max(1, Math.min(3600, Math.round(num("durationSec", 60))));
 
-  await ensureSchema();
+  let db: ReturnType<typeof getDb>;
+  try {
+    db = getDb();
+    await ensureSchema(db);
+  } catch (error) {
+    console.error("[leaderboard] database unavailable", error);
+    return NextResponse.json({ ok: false, error: "database unavailable", duplicate: false }, { status: 503 });
+  }
   let duplicate = false;
   try {
     const inserted = await db
@@ -152,7 +161,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "database unavailable", duplicate: false }, { status: 503 });
   }
 
-  const entries = await readTop10().catch(() => [] as Entry[]);
+  const entries = await readTop10(db).catch(() => [] as Entry[]);
   const rank = entries.findIndex((entry) => entry.name.toLowerCase() === name.toLowerCase()) + 1;
   return NextResponse.json({ ok: true, duplicate, rank: rank || entries.length + (score > 0 ? 1 : 0), entries });
 }
