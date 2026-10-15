@@ -137,10 +137,13 @@ function OfflineBadge({ offline }: { offline: OfflineState }) {
     : offline.ready
       ? "border-emerald-300/50 bg-emerald-400/15 text-emerald-200"
       : "border-sky-300/40 bg-sky-400/10 text-sky-100";
-  return 
-    
-      
- ;
+  if (!label) return null;
+
+  return (
+    <span className={`rounded-full border px-2.5 py-1 text-[9px] font-black tracking-[0.14em] ${tone}`}>
+      {label}
+    </span>
+  );
 }
 
 export { OfflineBadge };
